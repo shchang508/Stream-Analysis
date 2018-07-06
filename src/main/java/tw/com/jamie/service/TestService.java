@@ -38,13 +38,13 @@ public class TestService {
 		XSSFRow title_header = sheet.createRow(0);
 
 		XSSFCell title00 = title_header.createCell(0);
-		title00.setCellValue("TELETEXT");
+		title00.setCellValue("Name of the Stream");
 
 		XSSFCell title01 = title_header.createCell(1);
-		title01.setCellValue("title02");
+		title01.setCellValue("TELETEXT");
 
 		XSSFCell title02 = title_header.createCell(2);
-		title02.setCellValue("title03");
+		title02.setCellValue("Resolution");
 
 		XSSFCell cell = null;
 		int initRow = 1;
@@ -52,9 +52,7 @@ public class TestService {
 		
 			XSSFRow detailRow = sheet.createRow(initRow);
 			
-			cell = detailRow.createCell(0);
-			
-			
+			cell = detailRow.createCell(1);
 			
 			List<PMTs_CHANNEL> pmtsChannelList = table.getPmts().getPmtsChannelList();
 			logger.info("Number of Channels : " + pmtsChannelList.size());
@@ -66,12 +64,13 @@ public class TestService {
 					logger.info("STREAM-TYPE : " + e.getStreamType());
 					
 					if ("TELETEXT".equals(e.getStreamType())) {
-						
 						cell.setCellValue("Y");
 						break;
+					} else {
+						cell.setCellValue("N");
+						break;
 					}
-					
-					
+	
 				}	
 			}
 			

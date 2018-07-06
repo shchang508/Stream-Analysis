@@ -10,12 +10,13 @@ import javax.xml.bind.annotation.XmlType;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-//XML??�件中�?�根??��??
 @XmlRootElement(name = "MPEG-TABLES")
-//?��?��JAXB 绑�?�类中�?��?��?��?�段??��?��??
-@XmlType(propOrder = { "pmts", "nit", "eit" })
+@XmlType(propOrder = { "tunedMultiplex", "pmts", "nit", "eit" })
 public class MPEG_TABLES implements Serializable{
 	private static final long serialVersionUID = 1L;
+	
+	@XmlElement(name = "TUNED-MULTIPLEX")
+	private TUNED_MULTIPLEX tunedMultiplex;
 
 	@XmlElement(name = "PMTs")
 	private PMTs pmts;
@@ -25,6 +26,15 @@ public class MPEG_TABLES implements Serializable{
 
 	@XmlElement(name = "EIT")
 	private EIT eit;
+	
+
+	public TUNED_MULTIPLEX getTunedMultiplex() {
+		return tunedMultiplex;
+	}
+
+	public void setTunedMultiplex(TUNED_MULTIPLEX tunedMultiplex) {
+		this.tunedMultiplex = tunedMultiplex;
+	}
 
 	public PMTs getPmts() {
 		return pmts;

@@ -13,6 +13,7 @@ import tw.com.jamie.domain.NIT_ENTRY;
 import tw.com.jamie.domain.PMTs_CHANNEL;
 import tw.com.jamie.domain.PMTs_CHANNEL_ELEMENTARY_STREAM;
 import tw.com.jamie.domain.PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR;
+import tw.com.jamie.domain.TUNED_MULTIPLEX;
 import tw.com.jamie.service.TestService;
 import tw.com.jamie.util.CwFileUtils;
 
@@ -30,8 +31,8 @@ public class Test {
 		 
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		service.genMpegExcel(workbook, table);
-		String reportName = "seesawin_" + new Date().getTime();
-		String destination = "C:\\test";
+		String reportName = "jamie_" + new Date().getTime();
+		String destination = "D:\\reportTest";
 
 		CwFileUtils.createExcelFile(workbook, reportName, destination);
 
@@ -39,6 +40,10 @@ public class Test {
 //		MPEG_TABLES table = (MPEG_TABLES) XMLUtil.convertXmlFileToObject(MPEG_TABLES.class, is);
 		
 		logger.info("---Convert XML to Object START---");
+		
+		/************************************ TUNED-MULTIPLEX ************************************/
+		TUNED_MULTIPLEX tunerString = table.getTunedMultiplex();
+		logger.info("Name of the Stream : " + tunerString.getTunerString());
 		
 		/************************************ PMTs ************************************/
 		List<PMTs_CHANNEL> pmtsChannelList = table.getPmts().getPmtsChannelList();
