@@ -32,7 +32,7 @@ public class Test {
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		service.genMpegExcel(workbook, table);
 		String reportName = "jamie_" + new Date().getTime();
-		String destination = "D:\\reportTest";
+		String destination = "D:\\Excel Test";
 
 		CwFileUtils.createExcelFile(workbook, reportName, destination);
 
