@@ -1,6 +1,11 @@
 package tw.com.jamie.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -98,28 +103,68 @@ public class TestService {
 		logger.info("Number of Channels : " + pmtsChannelList.size());
 		cell.setCellValue(pmtsChannelList.size());
 		
-		
+		boolean audioFlag = true;
+		boolean resolutionFlag = true;
 		for (PMTs_CHANNEL c : pmtsChannelList) {
 			logger.info("ServiceNumber : " + c.getServiceNumber());
 			List<PMTs_CHANNEL_ELEMENTARY_STREAM> elementaryStreamList = c.getPmtsChannelEementaryStreamList();
 			for (PMTs_CHANNEL_ELEMENTARY_STREAM e : elementaryStreamList) {
-				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
-				cell = detailRow.createCell(3);
-				if () {
+				List<PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR> descriptorList = e.getDescriptorList();
+				for (PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR d : descriptorList) {
+					logger.info("TAG : " + d.getTag());
+					logger.info("LENGTH : " + d.getLength());
+					logger.info("DATA : " + d.getData());
 					
+//					if (d.getTag() == "0x59") {
+//						String[] arrData = d.getData().split(" ");
+//						logger.info("[[[[[ArrData]]]] : " +  arrData[1] + arrData[2] + arrData[3]);
+//						cell = detailRow.createCell(2);
+//						
+//					}
+				}
+				
+				
+				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
+				if (e.getAudioLanguage() != null) {
+					if (audioFlag) {
+						logger.info(">>>>>>> AUDIO-LANGUAGE : " + e.getAudioLanguage());
+						cell = detailRow.createCell(3);
+						cell.setCellValue(e.getAudioLanguage());
+						audioFlag = false;
+					}
 				}
 
-				
 				
 				logger.info("STREAM-TYPE : " + e.getStreamType());
 				cell = detailRow.createCell(4);
 				if ("TELETEXT".equals(e.getStreamType())) {
 					cell.setCellValue("Y");
-					break;
 				} else {
 					cell.setCellValue("N");
-					break;
 				}
+				
+				
+				cell = detailRow.createCell(5);
+				logger.info("AUDIO-TYPE : " + e.getAudioType());
+				if (e.getAudioType() != null && e.getAudioType().contains("AC3")) {
+					cell.setCellValue("Y");
+				} else {
+					cell.setCellValue("N");
+				}
+				
+				
+				
+				logger.info("HORIZONTAL-RESOLUTION : " + e.getHorizontalResolution());
+				logger.info("VERTICAL-RESOLUTION : " + e.getVerticalResolution());
+				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
+				if (e.getHorizontalResolution() != null && e.getVerticalResolution() != null) {
+					if (resolutionFlag) {
+						cell = detailRow.createCell(6);
+						cell.setCellValue(e.getHorizontalResolution() + "*" + e.getVerticalResolution());
+						resolutionFlag = false;
+					}
+				}
+				
 			}
 		}
 		
@@ -128,13 +173,16 @@ public class TestService {
 		for (NIT_ENTRY nc : entryList) {
 			logger.info("NETWORK-NAME : " + nc.getNetworkName());
 			if ("Freeview".equals(nc.getNetworkName())) {
+				logger.info(">>>>>>>NETWORK-NAME : " + nc.getNetworkName());
 				cell.setCellValue("Y");
-				break;
 			} else {
 				cell.setCellValue("N");
-				break;
 			}
 		}
+		
+		
+		
+		Set<String> sets = new HashSet<String>();
 
 		cell = detailRow.createCell(10);
 		List<EIT_CHANNEL> eitChannelList = table.getEit().getEitChannelList();
@@ -142,27 +190,30 @@ public class TestService {
 			List<EIT_CHANNEL_EVENT> eventList = ec.getEitChannelEventList();
 			for (EIT_CHANNEL_EVENT evnt : eventList) {
 				logger.info("EVENT : " + evnt.getRating());
-				if (evnt.getRating().length() != 0) {
-					cell.setCellValue(evnt.getRating().substring(5, evnt.getRating().length()));
-				} else {
-					break;
-				}
-				
-				
-//				String[] rating = evnt.getRating().split(" "); 	
-//				for (String s : rating) {
-//					cell.setCellValue(s);
+//				if (evnt.getRating().length() != 0) {
+//					cell.setCellValue(evnt.getRating().substring(5, evnt.getRating().length()));
+//				} else {
+//					break;
 //				}
-			
 				
-				
+				String[] arrRaing = evnt.getRating().split(": ");
+				if ((evnt.getRating() != null &&  !"".equals(evnt.getRating())) && !"undefined".equals(arrRaing[1])) {
+					sets.add(arrRaing[1]);
+				}
 			}
 		}
-//			cell = detailRow.createCell(2);
-//			cell.setCellValue("222");
-//			
-//			cell = detailRow.createCell(3);
-//			cell.setCellValue("33344445555");
+		
+		StringBuilder sb = new StringBuilder();
+		int count = 0;
+		for (String s : sets) {
+			count ++;
+			logger.info("Sets : " + s);
+			sb.append(s);
+			if (count != sets.size()) {
+				sb.append(", ");
+			}
+		}
+		cell.setCellValue(sb.toString());
 		
 	}
 }
