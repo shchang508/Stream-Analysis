@@ -1,6 +1,8 @@
 package tw.com.jamie.service;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -24,24 +26,27 @@ import tw.com.jamie.domain.TUNED_MULTIPLEX;
 import tw.com.jamie.main.Test;
 import tw.com.jamie.util.XMLUtil;
 
-public class TestService {
-	
+public class TestService extends BaseAbstractService {
+
 	private static final Logger logger = Logger.getLogger(TestService.class);
-	
-	public Object genTable (String path, Class clazz) {
-		 
+
+	public Object genTable(String path, Class clazz) {
+
 		return XMLUtil.convertXmlFileToObject(clazz, path);
-				
+
 	}
 
-	public void genMpegExcel (XSSFWorkbook workbook, MPEG_TABLES table) {
+	public void genMpegExcel(XSSFWorkbook workbook, MPEG_TABLES table, String fileName) {
 		System.out.println("generate excel...");
 
 		XSSFSheet sheet = workbook.createSheet("sheet01");
+		
+		this.setStyle(workbook);
 
 		// 固定欄位寬度設定
 		sheet.setColumnWidth(0, 256 * 20);
 		sheet.setColumnWidth(1, 256 * 20);
+		sheet.setColumnWidth(2, 256 * 20);
 		sheet.setColumnWidth(3, 256 * 20);
 		sheet.setColumnWidth(4, 256 * 20);
 		sheet.setColumnWidth(5, 256 * 20);
@@ -55,56 +60,76 @@ public class TestService {
 
 		XSSFCell title00 = title_header.createCell(0);
 		title00.setCellValue("Name of the Stream");
+		title00.setCellStyle(cellStyleMap.get("style_01"));
 
 		XSSFCell title01 = title_header.createCell(1);
 		title01.setCellValue("Number of Channels");
-		
+		title01.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title02 = title_header.createCell(2);
 		title02.setCellValue("Subtitle Language");
-		
+		title02.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title03 = title_header.createCell(3);
 		title03.setCellValue("Audio Language");
+		title03.setCellStyle(cellStyleMap.get("style_01"));
 		
 		XSSFCell title04 = title_header.createCell(4);
 		title04.setCellValue("TELETEXT");
-		
+		title04.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title05 = title_header.createCell(5);
 		title05.setCellValue("Dolby Digital");
+		title05.setCellStyle(cellStyleMap.get("style_01"));
 
 		XSSFCell title06 = title_header.createCell(6);
 		title06.setCellValue("Resolution");
-		
+		title06.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title07 = title_header.createCell(7);
 		title07.setCellValue("Visually Impaired");
-		
+		title07.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title08 = title_header.createCell(8);
 		title08.setCellValue("HbbTV");
-		
+		title08.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title09 = title_header.createCell(9);
 		title09.setCellValue("Freeview");
-		
+		title09.setCellStyle(cellStyleMap.get("style_01"));
+
 		XSSFCell title10 = title_header.createCell(10);
 		title10.setCellValue("Rating");
+		title10.setCellStyle(cellStyleMap.get("style_01"));
 
-		
 		XSSFCell cell = null;
 		int initRow = 1;
-		
-		
+
 		XSSFRow detailRow = sheet.createRow(initRow);
 		
+		logger.info("---------------Convert XML to Object START---------------");
+		
+		/************************************ Name of the Stream ************************************/
 		cell = detailRow.createCell(0);
-		TUNED_MULTIPLEX tunerString = table.getTunedMultiplex();
-		logger.info("Name of the Stream : " + tunerString.getTunerString());
-		cell.setCellValue(tunerString.getTunerString());
-
+		// TUNED_MULTIPLEX tunerString = table.getTunedMultiplex();
+		// logger.info("Name of the Stream : " + tunerString.getTunerString());
+		cell.setCellValue(fileName.replaceAll(".xml", ""));
+		
+		
+		/************************************ Number of channels ************************************/
 		cell = detailRow.createCell(1);
 		List<PMTs_CHANNEL> pmtsChannelList = table.getPmts().getPmtsChannelList();
 		logger.info("Number of Channels : " + pmtsChannelList.size());
 		cell.setCellValue(pmtsChannelList.size());
 		
-		boolean audioFlag = true;
+		
+		boolean audioLanFlag = true;
+		boolean dolbyFlag = true;
 		boolean resolutionFlag = true;
+		boolean hbbFlag = true;
+		boolean visFlag = true;
+
+		Set<String> setsData = new HashSet<String>();
 		for (PMTs_CHANNEL c : pmtsChannelList) {
 			logger.info("ServiceNumber : " + c.getServiceNumber());
 			List<PMTs_CHANNEL_ELEMENTARY_STREAM> elementaryStreamList = c.getPmtsChannelEementaryStreamList();
@@ -114,49 +139,79 @@ public class TestService {
 					logger.info("TAG : " + d.getTag());
 					logger.info("LENGTH : " + d.getLength());
 					logger.info("DATA : " + d.getData());
-					
-//					if (d.getTag() == "0x59") {
-//						String[] arrData = d.getData().split(" ");
-//						logger.info("[[[[[ArrData]]]] : " +  arrData[1] + arrData[2] + arrData[3]);
-//						cell = detailRow.createCell(2);
-//						
-//					}
-				}
-				
-				
-				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
-				if (e.getAudioLanguage() != null) {
-					if (audioFlag) {
-						logger.info(">>>>>>> AUDIO-LANGUAGE : " + e.getAudioLanguage());
-						cell = detailRow.createCell(3);
-						cell.setCellValue(e.getAudioLanguage());
-						audioFlag = false;
+
+					if ("0x59".equals(d.getTag())) {
+						String data = d.getData().substring(0, 3);
+						setsData.add(data);
 					}
+					
+					
+					/************************************ HbbTV ************************************/
+					if (hbbFlag) {
+						logger.info("OOOOOO: " + d.getTag());
+						cell = detailRow.createCell(8);
+						if ("0x6f".equals(d.getTag())) {
+							cell.setCellValue("Y");
+							hbbFlag = false;
+						} else {
+							cell.setCellValue("N");
+						}
+					}
+					
+					
+					/************************************ Visually Impaired ************************************/
+					if (visFlag) {
+						cell = detailRow.createCell(7);
+						if ("0x06".equals(d.getTag())) {
+							cell.setCellValue("Y");
+							visFlag = false;
+						} else {
+							cell.setCellValue("N");
+						}
+					}
+
 				}
 
 				
+				/************************************ Audio Language ************************************/
+				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
+				if (e.getAudioLanguage() != null) {
+					if (audioLanFlag) {
+						cell = detailRow.createCell(3);
+						logger.info(">>>>>>> AUDIO-LANGUAGE : " + e.getAudioLanguage());
+						cell.setCellValue(e.getAudioLanguage());
+						audioLanFlag = false;
+					}
+				}
+				
+				
+				/************************************ TELETEXT ************************************/
 				logger.info("STREAM-TYPE : " + e.getStreamType());
-				cell = detailRow.createCell(4);
 				if ("TELETEXT".equals(e.getStreamType())) {
+					cell = detailRow.createCell(4);
 					cell.setCellValue("Y");
 				} else {
 					cell.setCellValue("N");
 				}
+
 				
-				
-				cell = detailRow.createCell(5);
+				/************************************ Audio Type ************************************/
 				logger.info("AUDIO-TYPE : " + e.getAudioType());
-				if (e.getAudioType() != null && e.getAudioType().contains("AC3")) {
-					cell.setCellValue("Y");
-				} else {
-					cell.setCellValue("N");
+				if (dolbyFlag) {
+					if (e.getAudioType() != null && e.getAudioType().contains("AC3")) {
+						cell = detailRow.createCell(5);
+						logger.info(">>>>>>AUDIO-TYPE : " + e.getAudioType());
+						cell.setCellValue("Y");
+						dolbyFlag = false;
+					} else {
+						cell.setCellValue("N");
+					}
 				}
 				
-				
-				
+
+				/************************************ Resolution ************************************/
 				logger.info("HORIZONTAL-RESOLUTION : " + e.getHorizontalResolution());
 				logger.info("VERTICAL-RESOLUTION : " + e.getVerticalResolution());
-				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
 				if (e.getHorizontalResolution() != null && e.getVerticalResolution() != null) {
 					if (resolutionFlag) {
 						cell = detailRow.createCell(6);
@@ -164,50 +219,66 @@ public class TestService {
 						resolutionFlag = false;
 					}
 				}
-				
+
+			}
+		}
+
+		/************************************ Subtitle Language ************************************/
+		StringBuilder sbData = new StringBuilder();
+		int countData = 0;
+		for (String sData : setsData) {
+			countData++;
+			sbData.append(sData);
+			if (countData != setsData.size()) {
+				sbData.append(", ");
 			}
 		}
 		
+		cell = detailRow.createCell(2);
+		cell.setCellValue(sbData.toString());
+		
+		
+		/************************************ Freeview ************************************/
 		cell = detailRow.createCell(9);
 		List<NIT_ENTRY> entryList = table.getNit().getNitEntryList();
 		for (NIT_ENTRY nc : entryList) {
-			logger.info("NETWORK-NAME : " + nc.getNetworkName());
-			if ("Freeview".equals(nc.getNetworkName())) {
+			if ("Freeview".equals(nc.getNetworkName().trim())) {
 				logger.info(">>>>>>>NETWORK-NAME : " + nc.getNetworkName());
 				cell.setCellValue("Y");
 			} else {
 				cell.setCellValue("N");
 			}
 		}
-		
-		
-		
-		Set<String> sets = new HashSet<String>();
 
+		
+		/************************************ Rating ************************************/
+		Set<String> sets = new HashSet<String>();
 		cell = detailRow.createCell(10);
 		List<EIT_CHANNEL> eitChannelList = table.getEit().getEitChannelList();
 		for (EIT_CHANNEL ec : eitChannelList) {
 			List<EIT_CHANNEL_EVENT> eventList = ec.getEitChannelEventList();
 			for (EIT_CHANNEL_EVENT evnt : eventList) {
 				logger.info("EVENT : " + evnt.getRating());
-//				if (evnt.getRating().length() != 0) {
-//					cell.setCellValue(evnt.getRating().substring(5, evnt.getRating().length()));
-//				} else {
-//					break;
-//				}
-				
-				String[] arrRaing = evnt.getRating().split(": ");
-				if ((evnt.getRating() != null &&  !"".equals(evnt.getRating())) && !"undefined".equals(arrRaing[1])) {
-					sets.add(arrRaing[1]);
+				// if (evnt.getRating().length() != 0) {
+				// cell.setCellValue(evnt.getRating().substring(5, evnt.getRating().length()));
+				// } else {
+				// break;
+				// }
+
+				String[] arrRating = evnt.getRating().split(": ");
+				if ((evnt.getRating() != null && !"".equals(evnt.getRating())) && !"undefined".equals(arrRating[1])) {
+					sets.add(arrRating[1]);
 				}
 			}
 		}
-		
+
 		StringBuilder sb = new StringBuilder();
 		int count = 0;
 		for (String s : sets) {
-			count ++;
+			count++;
 			logger.info("Sets : " + s);
+			String[] numbers = s.split(" ");
+
 			sb.append(s);
 			if (count != sets.size()) {
 				sb.append(", ");
@@ -215,5 +286,7 @@ public class TestService {
 		}
 		cell.setCellValue(sb.toString());
 		
+		
+		logger.info("---Convert XML to Object END---"); 
 	}
 }

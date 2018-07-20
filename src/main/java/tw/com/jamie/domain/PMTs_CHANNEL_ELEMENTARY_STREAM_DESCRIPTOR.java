@@ -5,6 +5,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import tw.com.jamie.util.HexConvter;
+
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "DESCRIPTOR")
@@ -12,12 +16,14 @@ import javax.xml.bind.annotation.XmlType;
 public class PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR {
 	
 	@XmlElement(name = "TAG")
+	//@XmlJavaTypeAdapter(value=HexConvter.class)
 	private String tag;
 	
 	@XmlElement(name = "LENGTH")
 	private String length;
 	
 	@XmlElement(name = "DATA")
+	@XmlJavaTypeAdapter(value=HexConvter.class)
 	private String data;
 
 	public String getTag() {
