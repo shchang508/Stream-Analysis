@@ -121,6 +121,7 @@ public class TestService extends BaseAbstractService {
 		List<PMTs_CHANNEL> pmtsChannelList = table.getPmts().getPmtsChannelList();
 		logger.info("Number of Channels : " + pmtsChannelList.size());
 		cell.setCellValue(pmtsChannelList.size());
+		cell.setCellStyle(cellStyleMap.get("style_01"));
 		
 		
 		boolean audioLanFlag = true;
@@ -191,6 +192,7 @@ public class TestService extends BaseAbstractService {
 					cell = detailRow.createCell(4);
 					cell.setCellValue("Y");
 				} else {
+					cell = detailRow.createCell(4);
 					cell.setCellValue("N");
 				}
 
