@@ -38,13 +38,16 @@ public class TestService extends BaseAbstractService {
 
 	public void genMpegExcel(XSSFWorkbook workbook, MPEG_TABLES table, String fileName) {
 		System.out.println("generate excel...");
-
-		XSSFSheet sheet = workbook.createSheet("sheet01");
 		
 		this.setStyle(workbook);
 
+		XSSFSheet sheet = workbook.createSheet("sheet01");
+		
+		
+//		sheet.createFreezePane(1, 2);
+
 		// 固定欄位寬度設定
-		sheet.setColumnWidth(0, 256 * 20);
+		sheet.setColumnWidth(0, 500 * 20); //
 		sheet.setColumnWidth(1, 256 * 20);
 		sheet.setColumnWidth(2, 256 * 20);
 		sheet.setColumnWidth(3, 256 * 20);
@@ -54,7 +57,7 @@ public class TestService extends BaseAbstractService {
 		sheet.setColumnWidth(7, 256 * 20);
 		sheet.setColumnWidth(8, 256 * 20);
 		sheet.setColumnWidth(9, 256 * 20);
-		sheet.setColumnWidth(10, 256 * 20);
+		sheet.setColumnWidth(10, 500 * 20);
 
 		XSSFRow title_header = sheet.createRow(0);
 
@@ -114,6 +117,7 @@ public class TestService extends BaseAbstractService {
 		// TUNED_MULTIPLEX tunerString = table.getTunedMultiplex();
 		// logger.info("Name of the Stream : " + tunerString.getTunerString());
 		cell.setCellValue(fileName.replaceAll(".xml", ""));
+		cell.setCellStyle(cellStyleMap.get("style_02"));	
 		
 		
 		/************************************ Number of channels ************************************/
@@ -121,8 +125,7 @@ public class TestService extends BaseAbstractService {
 		List<PMTs_CHANNEL> pmtsChannelList = table.getPmts().getPmtsChannelList();
 		logger.info("Number of Channels : " + pmtsChannelList.size());
 		cell.setCellValue(pmtsChannelList.size());
-		cell.setCellStyle(cellStyleMap.get("style_01"));
-		
+		cell.setCellStyle(cellStyleMap.get("style_02"));		
 		
 		boolean audioLanFlag = true;
 		boolean dolbyFlag = true;
@@ -136,92 +139,113 @@ public class TestService extends BaseAbstractService {
 			List<PMTs_CHANNEL_ELEMENTARY_STREAM> elementaryStreamList = c.getPmtsChannelEementaryStreamList();
 			for (PMTs_CHANNEL_ELEMENTARY_STREAM e : elementaryStreamList) {
 				List<PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR> descriptorList = e.getDescriptorList();
-				for (PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR d : descriptorList) {
-					logger.info("TAG : " + d.getTag());
-					logger.info("LENGTH : " + d.getLength());
-					logger.info("DATA : " + d.getData());
+				logger.info("descriptorList : " + descriptorList);
+				if (descriptorList != null) {
+					for (PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR d : descriptorList) {
+						logger.info("TAG : " + d.getTag());
+						logger.info("LENGTH : " + d.getLength());
+						logger.info("DATA : " + d.getData());
+						
+						
+						if ("0x59".equals(d.getTag())) {
+							String data = d.getData().substring(0, 3);
+							setsData.add(data);
+						} 
+//						else {
+//							cell = detailRow.createCell(2);
+//							cell.setCellValue("No subtitles");
+//							cell.setCellStyle(cellStyleMap.get("style_02"));
+//						}
+						
+						
+						/************************************ HbbTV ************************************/
+						if (hbbFlag) {
+							logger.info("OOOOOO: " + d.getTag());
+							cell = detailRow.createCell(8);
+							if ("0x6f".equals(d.getTag())) {
+								cell.setCellValue("Y");
+								hbbFlag = false;
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+							} else {
+								cell.setCellValue("N");
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+							}
+						}
+						
+						
+						/************************************ Visually Impaired ************************************/
+						if (visFlag) {
+							cell = detailRow.createCell(7);
+							if ("0x06".equals(d.getTag())) {
+								cell.setCellValue("Y");
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+								visFlag = false;
+							} else {
+								cell.setCellValue("N");
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+							}
+						}
 
-					if ("0x59".equals(d.getTag())) {
-						String data = d.getData().substring(0, 3);
-						setsData.add(data);
 					}
+
 					
-					
-					/************************************ HbbTV ************************************/
-					if (hbbFlag) {
-						logger.info("OOOOOO: " + d.getTag());
-						cell = detailRow.createCell(8);
-						if ("0x6f".equals(d.getTag())) {
-							cell.setCellValue("Y");
-							hbbFlag = false;
-						} else {
-							cell.setCellValue("N");
+					/************************************ Audio Language ************************************/
+					logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
+					if (e.getAudioLanguage() != null) {
+						if (audioLanFlag) {
+							cell = detailRow.createCell(3);
+							logger.info(">>>>>>> AUDIO-LANGUAGE : " + e.getAudioLanguage());
+							cell.setCellValue(e.getAudioLanguage());
+							audioLanFlag = false;
+							cell.setCellStyle(cellStyleMap.get("style_02"));
 						}
 					}
 					
 					
-					/************************************ Visually Impaired ************************************/
-					if (visFlag) {
-						cell = detailRow.createCell(7);
-						if ("0x06".equals(d.getTag())) {
-							cell.setCellValue("Y");
-							visFlag = false;
-						} else {
-							cell.setCellValue("N");
-						}
-					}
-
-				}
-
-				
-				/************************************ Audio Language ************************************/
-				logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());
-				if (e.getAudioLanguage() != null) {
-					if (audioLanFlag) {
-						cell = detailRow.createCell(3);
-						logger.info(">>>>>>> AUDIO-LANGUAGE : " + e.getAudioLanguage());
-						cell.setCellValue(e.getAudioLanguage());
-						audioLanFlag = false;
-					}
-				}
-				
-				
-				/************************************ TELETEXT ************************************/
-				logger.info("STREAM-TYPE : " + e.getStreamType());
-				if ("TELETEXT".equals(e.getStreamType())) {
-					cell = detailRow.createCell(4);
-					cell.setCellValue("Y");
-				} else {
-					cell = detailRow.createCell(4);
-					cell.setCellValue("N");
-				}
-
-				
-				/************************************ Audio Type ************************************/
-				logger.info("AUDIO-TYPE : " + e.getAudioType());
-				if (dolbyFlag) {
-					if (e.getAudioType() != null && e.getAudioType().contains("AC3")) {
-						cell = detailRow.createCell(5);
-						logger.info(">>>>>>AUDIO-TYPE : " + e.getAudioType());
+					/************************************ TELETEXT ************************************/
+					logger.info("STREAM-TYPE : " + e.getStreamType());
+					if ("TELETEXT".equals(e.getStreamType())) {
+						cell = detailRow.createCell(4);
 						cell.setCellValue("Y");
-						dolbyFlag = false;
+						cell.setCellStyle(cellStyleMap.get("style_02"));
 					} else {
+						cell = detailRow.createCell(4);
 						cell.setCellValue("N");
+						cell.setCellStyle(cellStyleMap.get("style_02"));
 					}
+
+					
+					/************************************ Audio Type ************************************/
+					logger.info("AUDIO-TYPE : " + e.getAudioType());
+					if (dolbyFlag) {
+						if (e.getAudioType() != null && e.getAudioType().contains("AC3")) {
+							cell = detailRow.createCell(5);
+							logger.info(">>>>>>AUDIO-TYPE : " + e.getAudioType());
+							cell.setCellValue("Y");
+							dolbyFlag = false;
+							cell.setCellStyle(cellStyleMap.get("style_02"));
+						} else {
+							cell.setCellValue("N");
+							cell.setCellStyle(cellStyleMap.get("style_02"));
+						}
+					}
+					
+
+					/************************************ Resolution ************************************/
+					logger.info("HORIZONTAL-RESOLUTION : " + e.getHorizontalResolution());
+					logger.info("VERTICAL-RESOLUTION : " + e.getVerticalResolution());
+					if (e.getHorizontalResolution() != null && e.getVerticalResolution() != null) {
+						if (resolutionFlag) {
+							cell = detailRow.createCell(6);
+							cell.setCellValue(e.getHorizontalResolution() + "*" + e.getVerticalResolution());
+							resolutionFlag = false;
+							cell.setCellStyle(cellStyleMap.get("style_02"));
+						}
+					}
+
 				}
 				
-
-				/************************************ Resolution ************************************/
-				logger.info("HORIZONTAL-RESOLUTION : " + e.getHorizontalResolution());
-				logger.info("VERTICAL-RESOLUTION : " + e.getVerticalResolution());
-				if (e.getHorizontalResolution() != null && e.getVerticalResolution() != null) {
-					if (resolutionFlag) {
-						cell = detailRow.createCell(6);
-						cell.setCellValue(e.getHorizontalResolution() + "*" + e.getVerticalResolution());
-						resolutionFlag = false;
-					}
-				}
-
+				
 			}
 		}
 
@@ -238,6 +262,7 @@ public class TestService extends BaseAbstractService {
 		
 		cell = detailRow.createCell(2);
 		cell.setCellValue(sbData.toString());
+		cell.setCellStyle(cellStyleMap.get("style_02"));
 		
 		
 		/************************************ Freeview ************************************/
@@ -247,8 +272,10 @@ public class TestService extends BaseAbstractService {
 			if ("Freeview".equals(nc.getNetworkName().trim())) {
 				logger.info(">>>>>>>NETWORK-NAME : " + nc.getNetworkName());
 				cell.setCellValue("Y");
+				cell.setCellStyle(cellStyleMap.get("style_02"));
 			} else {
 				cell.setCellValue("N");
+				cell.setCellStyle(cellStyleMap.get("style_02"));
 			}
 		}
 
@@ -268,7 +295,7 @@ public class TestService extends BaseAbstractService {
 				// }
 
 				String[] arrRating = evnt.getRating().split(": ");
-				if ((evnt.getRating() != null && !"".equals(evnt.getRating())) && !"undefined".equals(arrRating[1])) {
+				if ((evnt.getRating() != null && !"".equals(evnt.getRating())) && !"undefined".equals(arrRating[1]) && !"Not classified".equals(arrRating[1])) {
 					sets.add(arrRating[1]);
 				}
 			}
@@ -287,6 +314,7 @@ public class TestService extends BaseAbstractService {
 			}
 		}
 		cell.setCellValue(sb.toString());
+		cell.setCellStyle(cellStyleMap.get("style_02"));
 		
 		
 		logger.info("---Convert XML to Object END---"); 

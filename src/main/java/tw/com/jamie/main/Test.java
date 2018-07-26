@@ -25,8 +25,10 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception {
 		
-		String fileName = "NZ_PCH29_538M_Channel_ONE_Rating-AO-0_020912-1.xml";
-		String path = "C:\\Users\\jamie.chang\\Desktop\\CourseRelated\\" + fileName;
+//		String fileName = "NZ_PCH29_538M_Channel_ONE_Rating-AO-0_020912-1.xml";
+		String fileName = "RatingG.xml";
+//		String path = "C:\\Users\\jamie.chang\\Desktop\\CourseRelated\\" + fileName;
+		String path = "D:\\" + fileName;
 		TestService service = new TestService ();
 		MPEG_TABLES table = (MPEG_TABLES) service.genTable(path, MPEG_TABLES.class);
 		 
