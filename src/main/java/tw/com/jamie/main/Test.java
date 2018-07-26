@@ -1,5 +1,7 @@
 package tw.com.jamie.main;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -16,6 +18,8 @@ import tw.com.jamie.domain.PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR;
 import tw.com.jamie.domain.TUNED_MULTIPLEX;
 import tw.com.jamie.service.TestService;
 import tw.com.jamie.util.CwFileUtils;
+import tw.com.jamie.util.FileReader;
+
 
 
 
@@ -25,10 +29,26 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception {
 		
+		
 //		String fileName = "NZ_PCH29_538M_Channel_ONE_Rating-AO-0_020912-1.xml";
-		String fileName = "RatingG.xml";
+//		String fileName = "RatingG.xml";
 //		String path = "C:\\Users\\jamie.chang\\Desktop\\CourseRelated\\" + fileName;
-		String path = "D:\\" + fileName;
+//		String path = "D:\\" + fileName;
+		
+		
+		String path = "D://Stream";
+		FileReader fr = new FileReader();
+		ArrayList<String> nameList =  fr.ReadFile(path);
+		
+		StringBuilder sb = new StringBuilder();
+		for (String s : nameList) {
+		    sb.append(s);
+		    sb.append("\t");
+		}
+		
+		String fileName = sb.toString();
+		logger.info("File Name: " + fileName);
+		
 		TestService service = new TestService ();
 		MPEG_TABLES table = (MPEG_TABLES) service.genTable(path, MPEG_TABLES.class);
 		 

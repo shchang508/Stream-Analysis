@@ -146,16 +146,15 @@ public class TestService extends BaseAbstractService {
 						logger.info("LENGTH : " + d.getLength());
 						logger.info("DATA : " + d.getData());
 						
-						
+						cell = detailRow.createCell(2);
 						if ("0x59".equals(d.getTag())) {
 							String data = d.getData().substring(0, 3);
 							setsData.add(data);
 						} 
-//						else {
-//							cell = detailRow.createCell(2);
-//							cell.setCellValue("No subtitles");
-//							cell.setCellStyle(cellStyleMap.get("style_02"));
-//						}
+						else {
+							cell.setCellValue("No subtitles");
+							cell.setCellStyle(cellStyleMap.get("style_02"));
+						}
 						
 						
 						/************************************ HbbTV ************************************/
@@ -260,7 +259,7 @@ public class TestService extends BaseAbstractService {
 			}
 		}
 		
-		cell = detailRow.createCell(2);
+//		cell = detailRow.createCell(2);
 		cell.setCellValue(sbData.toString());
 		cell.setCellStyle(cellStyleMap.get("style_02"));
 		
