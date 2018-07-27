@@ -6,22 +6,22 @@ import java.util.ArrayList;
 
 
 public class FileReader {
-
-	 public static InputStream getFileWithUtil(Class clazz, String fileName) {
-	 ClassLoader classLoader = clazz.getClassLoader();
-	 return classLoader.getResourceAsStream(fileName);
-	 }
+	
+	//read files in the project
+//	 public static InputStream getFileWithUtil(Class clazz, String fileName) {
+//	 ClassLoader classLoader = clazz.getClassLoader();
+//	 return classLoader.getResourceAsStream(fileName);
+//	 }
 
 	 
-	 public static ArrayList ReadFile(String filePath) {
+	 public static ArrayList readFile(String filePath) {
 			File folder = new File(filePath);
 //			File[] listOfFiles = folder.listFiles();
 			
-//			String fileName = new String();
 			ArrayList<String> fileList = new ArrayList<String>(); 
 			
-			for(String fileName: folder.list()) {
-				fileList.add(fileName);
+			for(String name: folder.list()) {
+				fileList.add(name);
 			}
 			
 //			for(int i = 0; i < listOfFiles.length; i++) {
@@ -32,10 +32,9 @@ public class FileReader {
 //				}
 //			
 //			}
-			return fileList;
-		}	
+			return fileList;	
 	
-	
+	 }
 
 
 }

@@ -36,24 +36,27 @@ public class Test {
 //		String path = "D:\\" + fileName;
 		
 		
-		String path = "D://Stream";
+		String path = "D:\\Stream\\";
 		FileReader fr = new FileReader();
-		ArrayList<String> nameList =  fr.ReadFile(path);
-		
-		StringBuilder sb = new StringBuilder();
-		for (String s : nameList) {
-		    sb.append(s);
-		    sb.append("\t");
-		}
-		
-		String fileName = sb.toString();
-		logger.info("File Name: " + fileName);
+		ArrayList<String> nameList =  fr.readFile(path);
 		
 		TestService service = new TestService ();
-		MPEG_TABLES table = (MPEG_TABLES) service.genTable(path, MPEG_TABLES.class);
-		 
+		MPEG_TABLES table = null;
 		XSSFWorkbook workbook = new XSSFWorkbook();
-		service.genMpegExcel(workbook, table, fileName);
+				
+		ArrayList<MPEG_TABLES> mpegList = new ArrayList<MPEG_TABLES>();
+		ArrayList<String> fileList = new ArrayList<String>();
+		
+		for(String fName: nameList) {
+			 table = (MPEG_TABLES) service.genTable(path + fName, MPEG_TABLES.class);
+			 mpegList.add(table);
+			 fileList.add(fName);
+
+		}
+		
+		service.genMpegExcel(workbook, mpegList, fileList);
+			
+		 
 		String reportName = "jamie_" + new Date().getTime();
 		String destination = "D:\\Excel Test";
 
