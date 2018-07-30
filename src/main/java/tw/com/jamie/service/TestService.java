@@ -302,7 +302,7 @@ public class TestService extends BaseAbstractService {
 			
 			/************************************ Rating ************************************/
 			Set<String> sets = new HashSet<String>();
-			Set<String> s = new HashSet<String>();
+			Set<Integer> sets1 = new HashSet<Integer>();
 			cell = detailRow.createCell(10);
 			List<EIT_CHANNEL> eitChannelList = table.getEit().getEitChannelList();
 			for (EIT_CHANNEL ec : eitChannelList) {
@@ -324,39 +324,28 @@ public class TestService extends BaseAbstractService {
 						String[] numbers = arrRating[1].split(" ");
 						if (numbers[0].matches(numberRegex)) {
 							
+							Integer[] intValues = new Integer[numbers[0].length()];						
+							for (int j = 0; j < numbers[0].length(); j++) {
+						            intValues[j] = Integer.parseInt(numbers[0].trim());
+						    }
 							
-							s.add(numbers[0]);
+							for(int k : intValues) {
+								sets1.add(k); 
+								Arrays.sort(sets1.toArray());								
+							}
 							
-							
-							logger.info("QQQQ: " + s);
-							
-//							for(int j = 0; j < numbers[0].length(); j++) {
-//								temp[j] = Integer.parseInt(numbers[0]);
-//							}
-//							
-//							for(int k = 0; k < temp.length; k++) {
-//								Integer.toString(temp[k]);
-//							}
-//							Arrays.sort(temp);
-							
-//							logger.info("QQQQ: " + temp);
-							
-							
-							
-//							Integer[] intValues = new Integer[numbers.length];
-//					        for (int j = 0; j < numbers.length; j++) {
-//					            intValues[j] = Integer.parseInt(numbers[1].trim());
-//					        }
 
-					        // Sort the number in ascending order using the Collections.sort() method.
-//					        Arrays.sort(intValues);
-					        
-					        
-//					        for (int k = 0; k < intValues.length; k++) {
-//					            InteintValue = intValues[k];
-//					           
-//					        }
-					        
+							for(int x : sets1) {
+								logger.info("After loop: " + x);
+								String s = String.valueOf(x);
+								s += " years old";
+								logger.info("Year: " + s);
+								sets.add(s);
+								logger.info("Sets: " + sets);
+							}
+							
+							
+							
 						} else {
 							sets.add(arrRating[1]);
 						}
