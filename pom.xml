@@ -42,5 +42,11 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.mud</groupId>
+			<artifactId>telnet_jar</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 </project>

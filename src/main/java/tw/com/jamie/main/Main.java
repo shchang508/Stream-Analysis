@@ -1,43 +1,35 @@
 package tw.com.jamie.main;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import tw.com.jamie.domain.EIT_CHANNEL;
-import tw.com.jamie.domain.EIT_CHANNEL_EVENT;
 import tw.com.jamie.domain.MPEG_TABLES;
-import tw.com.jamie.domain.NIT_ENTRY;
-import tw.com.jamie.domain.PMTs_CHANNEL;
-import tw.com.jamie.domain.PMTs_CHANNEL_ELEMENTARY_STREAM;
-import tw.com.jamie.domain.PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR;
-import tw.com.jamie.domain.TUNED_MULTIPLEX;
+import tw.com.jamie.service.StreamConvertion;
 import tw.com.jamie.service.TestService;
 import tw.com.jamie.util.CwFileUtils;
 import tw.com.jamie.util.FileReader;
 
 
-
-
-public class Test {
-
-	private static final Logger logger = Logger.getLogger(Test.class);
+public class Main {
 	
-	public static void main(String[] args) throws Exception {
+	private static final Logger logger = Logger.getLogger(Main.class);
+	
+	public static void main(String[] args) throws Exception{
+		
+		String streampath = JOptionPane.showInputDialog("Please input stream path: ");
+		
+		if(streampath.equals(" ")) 
+			streampath = "D:\\";
+		
+		StreamConvertion convert = new StreamConvertion(streampath + "\\");
 		
 		
-//		String fileName = "NZ_PCH29_538M_Channel_ONE_Rating-AO-0_020912-1.xml";
-//		String fileName = "RatingG.xml";
-//		String path = "C:\\Users\\jamie.chang\\Desktop\\CourseRelated\\" + fileName;
-//		String path = "D:\\" + fileName;
-		
-		
-		String path = "D:\\Stream\\";
-//		String path = "C:\\xml\\";
+//		String path = "D:\\Stream\\";
+		String path = "C:\\xml\\";
 		
 		FileReader fr = new FileReader();
 		ArrayList<String> nameList =  fr.readFile(path);
@@ -64,8 +56,6 @@ public class Test {
 
 		CwFileUtils.createExcelFile(workbook, reportName, destination);
 
-//		InputStream is = FileReader.getFileWithUtil(Test.class, "NZ_PCH29_538M_Channel_ONE_Rating-AO-0_020912-1.xml");
-//		MPEG_TABLES table = (MPEG_TABLES) XMLUtil.convertXmlFileToObject(MPEG_TABLES.class, is);
 		
 	}
 
