@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 public class FileReader {
 	
-	//read files in the project
-//	 public static InputStream getFileWithUtil(Class clazz, String fileName) {
-//	 ClassLoader classLoader = clazz.getClassLoader();
-//	 return classLoader.getResourceAsStream(fileName);
-//	 }
+//	read files in the project
+	 public static InputStream getFileWithUtil(Class clazz, String fileName) {
+		ClassLoader classLoader = clazz.getClassLoader();
+		return classLoader.getResourceAsStream(fileName);
+	 }
 
 	 
 	 public static ArrayList readFile(String filePath) {

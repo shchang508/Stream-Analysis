@@ -58,8 +58,8 @@ public class TestService extends BaseAbstractService {
 		sheet.setColumnWidth(6, 256 * 20);
 		sheet.setColumnWidth(7, 256 * 20);
 		sheet.setColumnWidth(8, 256 * 20);
-		sheet.setColumnWidth(9, 800 * 20);
-//		sheet.setColumnWidth(10, 800 * 20);
+		sheet.setColumnWidth(9, 256 * 20);
+		sheet.setColumnWidth(10, 800 * 20);
 
 		XSSFRow title_header = sheet.createRow(0);
 
@@ -91,19 +91,19 @@ public class TestService extends BaseAbstractService {
 		title06.setCellValue("Resolution");
 		title06.setCellStyle(cellStyleMap.get("style_01"));
 
-//		XSSFCell title07 = title_header.createCell(7);
-//		title07.setCellValue("Visually Impaired");
-//		title07.setCellStyle(cellStyleMap.get("style_01"));
+		XSSFCell title07 = title_header.createCell(7);
+		title07.setCellValue("HbbTV");
+		title07.setCellStyle(cellStyleMap.get("style_01"));
 
-		XSSFCell title08 = title_header.createCell(7);
-		title08.setCellValue("HbbTV");
+		XSSFCell title08 = title_header.createCell(8);
+		title08.setCellValue("Freeview");
 		title08.setCellStyle(cellStyleMap.get("style_01"));
-
-		XSSFCell title09 = title_header.createCell(8);
-		title09.setCellValue("Freeview");
+		
+		XSSFCell title09 = title_header.createCell(9);
+		title09.setCellValue("Radio channel");
 		title09.setCellStyle(cellStyleMap.get("style_01"));
 
-		XSSFCell title10 = title_header.createCell(9);
+		XSSFCell title10 = title_header.createCell(10);
 		title10.setCellValue("Rating");
 		title10.setCellStyle(cellStyleMap.get("style_01"));
 		
@@ -136,12 +136,11 @@ public class TestService extends BaseAbstractService {
 			cell.setCellValue(pmtsChannelList.size());
 			cell.setCellStyle(cellStyleMap.get("style_02"));		
 			
-//			boolean audioLanFlag = true;
 			boolean dolbyFlag = true;
 			boolean resolutionFlag = true;
 			boolean hbbFlag = true;
 			boolean teletextFlag = true;
-//			boolean visFlag = true;
+			boolean radioFlag = true;
 
 			Set<String> setsData = new HashSet<String>();
 			Set<String> setsData1 = new HashSet<String>();
@@ -171,15 +170,17 @@ public class TestService extends BaseAbstractService {
 							if (hbbFlag) {
 								logger.info("OOOOOO: " + d.getTag());  //TAG-->0x6f & DATA -->0x10
 								cell = detailRow.createCell(7);
-								logger.info("Comparison : " + d.getData().contains(unmarshal("0x10")));
-								
-								if ("0x6f".equals(d.getTag()) && d.getData().contains(unmarshal("0x10"))) {      
-									cell.setCellValue("Y");
-									hbbFlag = false;
-									cell.setCellStyle(cellStyleMap.get("style_02"));
-								} else {
-									cell.setCellValue("N");
-									cell.setCellStyle(cellStyleMap.get("style_02"));
+								if (d.getData() != null) {
+									logger.info("Comparison : " + d.getData().contains(unmarshal("0x10")));  //DATA might be null
+									
+									if ("0x6f".equals(d.getTag()) && d.getData().contains(unmarshal("0x10"))) {      
+										cell.setCellValue("Y");
+										hbbFlag = false;
+										cell.setCellStyle(cellStyleMap.get("style_02"));
+									} else {
+										cell.setCellValue("N");
+										cell.setCellStyle(cellStyleMap.get("style_02"));
+									}
 								}
 							}
 							
@@ -201,7 +202,8 @@ public class TestService extends BaseAbstractService {
 							/************************************ TELETEXT ************************************/
 							
 							if(teletextFlag) {
-								if ("0x56".equals(d.getTag())) {      //Change to TAG = 0x56
+								if ("0x56".equals(d.getTag())) {
+									logger.info(".....TELETEXT : " + d.getTag());   
 									cell = detailRow.createCell(4);
 									cell.setCellValue("Y");
 									teletextFlag = false;
@@ -216,8 +218,10 @@ public class TestService extends BaseAbstractService {
 
 						}
 					}
-					
-
+						
+						
+						
+						
 						
 						/************************************ Audio Language ************************************/
 						logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());   
@@ -266,10 +270,23 @@ public class TestService extends BaseAbstractService {
 						
 						
 						
+						/************************************ Radio Channel ************************************/
+						logger.info("STREAM-TYPE : " + e.getStreamType()); 
+						if(radioFlag) {
+							if (e.getStreamType().contains("AUDIO") && !e.getStreamType().contains("VIDEO")) {      
+								cell = detailRow.createCell(9);
+								cell.setCellValue("Y");
+								teletextFlag = false;
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+							} else {
+								cell = detailRow.createCell(9);
+								cell.setCellValue("N");
+								cell.setCellStyle(cellStyleMap.get("style_02"));
+							}
+							
+						}
 						
 				}
-				
-				
 				
 			}
 			
@@ -309,7 +326,7 @@ public class TestService extends BaseAbstractService {
 			List<NIT_ENTRY> entryList = table.getNit().getNitEntryList();
 			for (NIT_ENTRY nc : entryList) {
 				if ("Freeview".equals(nc.getNetworkName().trim())) {
-					logger.info(">>>>>>>NETWORK-NAME : " + nc.getNetworkName());
+					logger.info("NETWORK-NAME : " + nc.getNetworkName());
 					cell.setCellValue("Y");
 					cell.setCellStyle(cellStyleMap.get("style_02"));
 				} else {
@@ -322,7 +339,7 @@ public class TestService extends BaseAbstractService {
 			/************************************ Rating ************************************/
 			Set<String> sets = new HashSet<String>();
 			Set<Integer> setInt = new HashSet<Integer>();
-			cell = detailRow.createCell(9);
+			cell = detailRow.createCell(10);
 			List<EIT_CHANNEL> eitChannelList = table.getEit().getEitChannelList();
 			if(eitChannelList != null && !eitChannelList.isEmpty()) {
 				for (EIT_CHANNEL ec : eitChannelList) {
@@ -341,25 +358,9 @@ public class TestService extends BaseAbstractService {
 							
 							String[] arrRating = evnt.getRating().split(": ");
 							if ((evnt.getRating() != null && !"".equals(evnt.getRating())) && !"undefined".equals(arrRating[1]) && !"Not classified".equals(arrRating[1])) {
-//						sets.add(arrRating[1]);
 								String[] numbers = arrRating[1].split(" ");
 								if (numbers[0].matches(numberRegex)) {
-									
-									
-									
 									setInt.add(Integer.parseInt(numbers[0].trim())); 
-									
-									
-//							for(int x : sets1) {
-//								logger.info("After loop: " + x);
-//								String s = String.valueOf(x);
-//								s += " years old";
-//								logger.info("Year: " + s);
-//								sets.add(s);
-//								logger.info("Sets: " + sets);
-//							}
-//							
-									
 									
 								} else {
 									sets.add(arrRating[1]);
@@ -374,39 +375,9 @@ public class TestService extends BaseAbstractService {
 				logger.info("eitChannelList is an empty list!");
 			}
 
-//			StringBuilder sb = new StringBuilder();
-//			int count = 0;
-//			for (String s : sets) {
-//				count++;
-//				logger.info("Sets : " + s);
-//				String[] numbers = s.split(" ");
-//
-//				sb.append(s);
-//				if (count != sets.size()) {
-//					sb.append(", ");
-//				}
-//			}
 			
-			
-			
-			
-			List<Integer> list = new ArrayList<Integer>();
-			
-			for(int x : setInt) {
-				list.add(x);
-			}
-			
-			List<String> sList = new ArrayList<String>();
-			for(int ss : list) {
-				sList.add(ss + " years old");
-			}
-			
-			sList.addAll(sets);
-			
-			Collections.sort(list);
-			
-			String su = StringUtils.join(sList, ", ");
-			cell.setCellValue(su);
+			String years = this.addYears(setInt, sets);
+			cell.setCellValue(years);
 			cell.setCellStyle(cellStyleMap.get("style_02"));
 			
 			
@@ -416,6 +387,27 @@ public class TestService extends BaseAbstractService {
 		
 
 		
+	}
+	
+	private String addYears(Set<Integer> s1, Set<String> s2) {
+		List<Integer> list = new ArrayList<Integer>();
+		
+		for(int x : s1) {
+			list.add(x);
+		}
+		
+		List<String> sList = new ArrayList<String>();
+		for(int ss : list) {
+			sList.add(ss + " years old");
+		}
+		
+		sList.addAll(s2);
+		
+		Collections.sort(list);
+		
+		String su = StringUtils.join(sList, ", ");
+		
+		return su;
 	}
 	
 	private String unmarshal(String dateStr) {

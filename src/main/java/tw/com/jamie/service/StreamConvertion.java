@@ -11,6 +11,10 @@ public class StreamConvertion {
 	public String path = "C:\\";
 
 	public ArrayList<String> xfilenames = new ArrayList<String>();
+	
+	public ArrayList<String> getXfilenames() {
+		return xfilenames;
+	}
 
 	public StreamConvertion(String streampath) {
 		File folder = new File(streampath);
@@ -39,12 +43,16 @@ public class StreamConvertion {
 						// support
 
 						String xfilename = nameconvert(sname, "xml");
-						xfilenames.add(xfilename);
 						tsReader.send("export xml " + xfilepath + xfilename);
 						tsReader.waitfor("Data exported");
-
-						logger.info("Stream [" + (count++) + "] is exported as XML: " + sfile.getName());
+						
+						String result = "Stream [" + (count++) + "] is exported as XML: " + sfile.getName();
+						logger.info(result);
+						xfilenames.add(result);
+						
+						
 					}
+					
 				}
 			}
 			tsReader.disconnect();
