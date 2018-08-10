@@ -148,6 +148,10 @@ public class TestService extends BaseAbstractService {
 			for (PMTs_CHANNEL c : pmtsChannelList) {
 				logger.info("ServiceNumber : " + c.getServiceNumber());
 				List<PMTs_CHANNEL_ELEMENTARY_STREAM> elementaryStreamList = c.getPmtsChannelEementaryStreamList();
+				
+				boolean hasVideo = false;
+				boolean hasAudio = false;
+				
 				for (PMTs_CHANNEL_ELEMENTARY_STREAM e : elementaryStreamList) {
 					List<PMTs_CHANNEL_ELEMENTARY_STREAM_DESCRIPTOR> descriptorList = e.getDescriptorList();
 					logger.info("descriptorList : " + descriptorList);
@@ -220,9 +224,6 @@ public class TestService extends BaseAbstractService {
 					}
 						
 						
-						
-						
-						
 						/************************************ Audio Language ************************************/
 						logger.info("AUDIO-LANGUAGE : " + e.getAudioLanguage());   
 						if (e.getAudioLanguage() != null) {
@@ -273,20 +274,30 @@ public class TestService extends BaseAbstractService {
 						/************************************ Radio Channel ************************************/
 						logger.info("STREAM-TYPE : " + e.getStreamType()); 
 						if(radioFlag) {
-							if (e.getStreamType().contains("AUDIO") && !e.getStreamType().contains("VIDEO")) {      
-								cell = detailRow.createCell(9);
-								cell.setCellValue("Y");
-								teletextFlag = false;
-								cell.setCellStyle(cellStyleMap.get("style_02"));
-							} else {
-								cell = detailRow.createCell(9);
-								cell.setCellValue("N");
-								cell.setCellStyle(cellStyleMap.get("style_02"));
+							if ("VIDEO".equals(e.getStreamType())) { 
+								logger.info("RRRRR : " + e.getStreamType());
+								hasVideo = true;
+							} else if ("AUDIO".equals(e.getStreamType())){
+								hasAudio = true;
 							}
 							
 						}
 						
 				}
+				
+				if (radioFlag) {
+					if (hasVideo == false && hasAudio == true) {
+						cell = detailRow.createCell(9);
+						cell.setCellValue("Y");
+						radioFlag = false;
+						cell.setCellStyle(cellStyleMap.get("style_02"));
+					} else {
+						cell = detailRow.createCell(9);
+						cell.setCellValue("N");
+						cell.setCellStyle(cellStyleMap.get("style_02"));
+					}
+				}
+				
 				
 			}
 			
@@ -347,12 +358,7 @@ public class TestService extends BaseAbstractService {
 					if(eventList != null && !eventList.isEmpty()) {
 						for (EIT_CHANNEL_EVENT evnt : eventList) {
 							logger.info("EVENT : " + evnt.getRating());
-							// if (evnt.getRating().length() != 0) {
-							// 	cell.setCellValue(evnt.getRating().substring(5, evnt.getRating().length()));
-							// } else {
-							// 	break;
-							// }
-							
+						
 							//check if a string is a number
 							String numberRegex = "^(-?[1-9]\\d*\\.?\\d*)|(-?0\\.\\d*[1-9])|(-?[0])|(-?[0]\\.\\d*)$"; 
 							

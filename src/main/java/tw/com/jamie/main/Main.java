@@ -1,9 +1,19 @@
 package tw.com.jamie.main;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog.ModalityType;
+import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.HeadlessException;
 import java.awt.Image;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,13 +21,18 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.log4j.lf5.util.StreamUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import tw.com.jamie.domain.MPEG_TABLES;
@@ -26,107 +41,119 @@ import tw.com.jamie.service.TestService;
 import tw.com.jamie.util.CwFileUtils;
 import tw.com.jamie.util.FileReader;
 
+public class Main extends JFrame {
 
-public class Main {
-	
 	private static final Logger logger = Logger.getLogger(Main.class);
-	
-	public ImageIcon getImage (String imagePath) {
+
+	public ImageIcon getImage(String imagePath) {
 		URL url = getClass().getResource(imagePath);
 		ImageIcon image = new ImageIcon(url);
 		return image;
 	}
-	
-	public static void main(String[] args) throws Exception{
-		
-		//Change application icon from Java coffee cup to customize image 
-		Image iconImage = ImageIO.read(Main.class.getResource("/output.png"));
-		
-		Main m = new Main();
-		ImageIcon icon = m.getImage("/start.png");
-		
 
-//		JFrame startFrame = new JFrame("Stream Convertion");
-//		startFrame.getContentPane().setBackground(Color.DARK_GRAY);
-//		startFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		startFrame.setVisible(true);
-//		startFrame.setResizable(false);
-//		startFrame.setSize(400, 300);
-//		startFrame.getContentPane().setLayout(null);
-//		startFrame.setLocationRelativeTo(null);
-//		startFrame.setIconImage(iconImage);
-		
-		String streampath = (String) JOptionPane.showInputDialog(null, "Please input stream path: ", "Input", JOptionPane.QUESTION_MESSAGE, icon, null, null);
-		
-		
-		if(streampath.equals(" ")) 
-			streampath = "D:\\";
-		
-		//loading frame
-		JFrame loadingFrame = new JFrame("Stream Analysis");
-		ImageIcon loadingIcon = m.getImage("/ajax-loader.gif");
-		JLabel loadingLabel = new JLabel("Loading... ", loadingIcon, JLabel.CENTER);
-		loadingFrame.add(loadingLabel);
-		loadingLabel.setFont(new Font("Arial", Font.BOLD, 18));
-		loadingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		loadingFrame.setSize(300, 200);
-		loadingFrame.setLocationRelativeTo(null);  //set Jframe to the centre of the screen
-		loadingFrame.setVisible(true);
-		
-		loadingFrame.setIconImage(iconImage);
-		
-		
-		
-		StreamConvertion convert = new StreamConvertion(streampath + "\\");
-		
-		
-//		String path = "D:\\Stream\\";
-		String path = "C:\\xml\\";
-		
-		FileReader fr = new FileReader();
-		ArrayList<String> nameList =  fr.readFile(path);
-		
-		TestService service = new TestService ();
-		MPEG_TABLES table = null;
-		XSSFWorkbook workbook = new XSSFWorkbook();
-				
-		ArrayList<MPEG_TABLES> mpegList = new ArrayList<MPEG_TABLES>();
-		ArrayList<String> fileList = new ArrayList<String>();
-		
-		for(String fName: nameList) {
-			 table = (MPEG_TABLES) service.genTable(path + fName, MPEG_TABLES.class);
-			 mpegList.add(table);
-			 fileList.add(fName);
-		}
-		
-		loadingFrame.dispose();        //window close after generate xml file
-		
-		
-		service.genMpegExcel(workbook, mpegList, fileList);
+
+	public static void main(String[] args) throws Exception {
+		try {
+			/************************************* Start ************************************/
+			// Change application icon from Java coffee cup to a customize image
+			Image iconImage = ImageIO.read(Main.class.getResource("/output.png"));
+
+			Main m = new Main();
+			ImageIcon icon = m.getImage("/outputDialog.png");
+
 			
-		String reportName = "jamie_" + new Date().getTime();
-		String destination = "D:\\Excel Test";
+			JFileChooser chooser = new JFileChooser();
+			chooser.setCurrentDirectory(new java.io.File("."));
+			chooser.setDialogTitle("Stream Analysis");
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setAcceptAllFileFilterUsed(false);
 
-		CwFileUtils.createExcelFile(workbook, reportName, destination);
-		
-		
-		JFrame resultFrame = new JFrame("Result");
-		Component comp = null;
-		JOptionPane.showMessageDialog(null, "Excel file is generated!", "Stream Analysis", JOptionPane.INFORMATION_MESSAGE, icon);
-		
-		for (String label : convert.getXfilenames()) {
-			comp = resultFrame.add(new JLabel(label, JLabel.CENTER));
+			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+//				logger.info("getCurrentDirectory(): " + chooser.getCurrentDirectory());
+				logger.info("getSelectedFile() : " + chooser.getSelectedFile());
+
+			} else {
+				logger.info("No Selection");
+			}
+
+//			String streamPath = (String) JOptionPane.showInputDialog(null, "Please input stream path: ", "Input", JOptionPane.QUESTION_MESSAGE, icon, null, null);
+
+			String streamPath = chooser.getSelectedFile().getPath();
+
+			if (StringUtils.isBlank(streamPath)) {
+				streamPath = "D:\\";
+			}
+
+			/************************************* Loading ************************************/
+			JFrame loadingFrame = new JFrame("Stream Analysis");
+			ImageIcon loadingIcon = m.getImage("/ajax-loader.gif");
+			JLabel loadingLabel = new JLabel("Loading... ", loadingIcon, JLabel.CENTER);
+			loadingFrame.add(loadingLabel);
+			loadingLabel.setFont(new Font("Calibri", Font.BOLD, 18));
+			loadingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			loadingFrame.setSize(300, 200);
+			loadingFrame.setLocationRelativeTo(null); // set JFrame to the centre of the screen
+			loadingFrame.setVisible(true);
+			loadingFrame.setResizable(false);
+			loadingFrame.setIconImage(iconImage);
+
+			StreamConvertion convert = new StreamConvertion(streamPath + "\\");
+
+//			String path = "D:\\Stream\\";
+			String path = "C:\\xml\\";
+
+			FileReader fr = new FileReader();
+			ArrayList<String> nameList = fr.readFile(path);
+
+			TestService service = new TestService();
+			MPEG_TABLES table = null;
+			XSSFWorkbook workbook = new XSSFWorkbook();
+
+			ArrayList<MPEG_TABLES> mpegList = new ArrayList<MPEG_TABLES>();
+			ArrayList<String> fileList = new ArrayList<String>();
+
+			for (String fName : nameList) {
+				table = (MPEG_TABLES) service.genTable(path + fName, MPEG_TABLES.class);
+				mpegList.add(table);
+				fileList.add(fName);
+			}
+
+			loadingFrame.dispose(); // Window will close after generate xml file
+
+			service.genMpegExcel(workbook, mpegList, fileList);
+
+			String reportName = "report_" + new Date().getTime();
+			String destination = "D:\\Stream Analysis";
+
+			CwFileUtils.createExcelFile(workbook, reportName, destination);
+
+			/************************************* Result ************************************/
+			JFrame resultFrame = new JFrame("Stream Analysis");
+			JLabel resultLabel = new JLabel("Excel file is generated in D:\\Stream Analysis", null, JLabel.CENTER);
+			resultFrame.add(resultLabel);
+			resultLabel.setFont(new Font("Calibri", Font.BOLD, 18));
+			resultFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			resultFrame.setSize(400, 200);
+			resultFrame.setLocationRelativeTo(null); // set JFrame to the centre of the screen
+			resultFrame.setVisible(true);
+			resultFrame.setResizable(false);
+			resultFrame.setIconImage(iconImage);
+
+//			JOptionPane.showMessageDialog(null, "Excel file is generated in D:\\Stream Analysis", "Stream Analysis", JOptionPane.INFORMATION_MESSAGE, icon);
+
+		} catch (HeadlessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw e;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.info("Cannot find the file specified)");
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-//		JOptionPane.showMessageDialog(comp, "Result");
-//
-//		resultFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		resultFrame.setLocationRelativeTo(null);
-//		resultFrame.setSize(400, 300);
-//		resultFrame.setVisible(true);
-//		resultFrame.setIconImage(iconImage);
-		
+
 	}
-	
-	
 
 }
